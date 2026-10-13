@@ -124,7 +124,8 @@
   .btn-wa:hover{background:rgba(37,211,102,.2);transform:translateY(-2px)}
   .btn-block{width:100%;padding:16px}
 
-  .cart-pill{position:relative}
+  .cart-pill{position:relative;overflow:visible}
+  .cart-pill::before{display:none}
   .cart-pill .count{
     position:absolute;top:-5px;right:-5px;background:var(--spice);color:#fff;font-size:.64rem;font-weight:700;
     min-width:19px;height:19px;border-radius:100px;display:grid;place-items:center;padding:0 5px;
@@ -341,6 +342,25 @@
   .sum.total .amt{color:var(--gold-2);font-family:'Cormorant Garamond',serif;font-size:1.6rem}
   .cart-note{text-align:center;color:var(--muted);font-size:.72rem;margin-top:11px;font-weight:300;display:flex;align-items:center;justify-content:center;gap:6px}
   .cart-note .i{width:13px;height:13px;color:var(--gold)}
+
+  /* ---------- Order details modal ---------- */
+  .omodal{position:fixed;inset:0;z-index:1400;display:grid;place-items:center;padding:20px;background:rgba(5,3,2,.74);backdrop-filter:blur(5px);opacity:0;visibility:hidden;transition:.35s}
+  .omodal.on{opacity:1;visibility:visible}
+  .omodal-card{position:relative;width:min(430px,100%);max-height:92vh;overflow-y:auto;background:#160f09;border:1px solid var(--line-2);border-radius:22px;padding:28px 26px;box-shadow:var(--shadow);transform:translateY(14px) scale(.98);transition:.35s var(--ease)}
+  .omodal.on .omodal-card{transform:none}
+  .omodal-card .x{position:absolute;top:16px;right:16px;background:none;border:1px solid var(--line);border-radius:11px;color:var(--cream);cursor:pointer;line-height:1;padding:8px 11px;transition:.3s}
+  .omodal-card .x:hover{border-color:var(--gold);color:var(--gold-2)}
+  .omodal-title{font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:600}
+  .omodal-sub{color:var(--muted);font-size:.82rem;margin:5px 0 20px;font-weight:300}
+  .field{display:block;margin-bottom:14px}
+  .field>span{display:block;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;font-weight:600}
+  .field>span i{color:var(--spice-2);font-style:normal}
+  .field input,.field textarea{width:100%;font-family:inherit;font-size:.92rem;color:var(--cream);background:#211710;border:1px solid var(--line);border-radius:12px;padding:12px 14px;outline:none;transition:border-color .25s;resize:vertical}
+  .field input:focus,.field textarea:focus{border-color:var(--gold)}
+  .field input.bad,.field textarea.bad{border-color:var(--spice-2);background:rgba(226,96,58,.07)}
+  .omodal-err{color:#ef9a86;font-size:.8rem;min-height:1.2em;margin:2px 0 10px}
+  .omodal-summary{background:#110b06;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:.84rem;color:#d8c9b5}
+  .omodal-summary b{color:var(--gold-2)}
 
   /* ---------- Mobile bottom bar ---------- */
   .mbar{position:fixed;left:0;right:0;bottom:0;z-index:1000;display:none;align-items:center;justify-content:space-between;gap:12px;padding:11px 16px calc(11px + env(safe-area-inset-bottom));background:rgba(16,11,8,.94);backdrop-filter:blur(18px);border-top:1px solid var(--line)}
@@ -717,6 +737,22 @@
   </div>
 </aside>
 
+<!-- Order details -->
+<div class="omodal" id="omodal" aria-hidden="true">
+  <div class="omodal-card" role="dialog" aria-modal="true" aria-label="Your order details">
+    <button class="x" id="omodalClose" aria-label="Close"><svg class="i" style="width:16px;height:16px"><use href="#i-x"/></svg></button>
+    <h3 class="omodal-title">Almost there</h3>
+    <p class="omodal-sub">Enter your name and delivery address so we can prepare the order and message you on WhatsApp.</p>
+    <div class="omodal-summary" id="omodalSummary"></div>
+    <label class="field"><span>Your name <i>*</i></span><input id="custName" type="text" autocomplete="name" placeholder="e.g. Rahul" maxlength="60"/></label>
+    <label class="field"><span>Delivery address <i>*</i></span><textarea id="custAddr" rows="2" placeholder="House / street / area, Madhavaram" maxlength="200"></textarea></label>
+    <label class="field"><span>Phone (optional)</span><input id="custPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="So we can call about your order" maxlength="15"/></label>
+    <div class="omodal-err" id="omodalErr"></div>
+    <button class="btn btn-wa btn-block" id="custSend"><svg class="i"><use href="#i-wa"/></svg> Send order on WhatsApp</button>
+    <div class="cart-note" style="margin-top:12px"><svg class="i"><use href="#i-shield"/></svg> Your details are only used to deliver this order</div>
+  </div>
+</div>
+
 <!-- Mobile bottom bar -->
 <div class="mbar">
   <span class="status" data-status><span class="dot"></span><span data-status-head>Hours</span></span>
@@ -896,11 +932,20 @@ overlay.addEventListener("click", closeCart);
 document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeCart(); });
 
 /* ---------- Checkout ---------- */
-function logOrder(keys, subtotal, delivery, total){
+function orderTotals(){
+  const keys = Object.keys(cart);
+  const subtotal = keys.reduce((s,k)=> s + findItem(k).p*cart[k], 0);
+  const delivery = subtotal === 0 ? 0 : (subtotal >= FREE_DELIVERY_MIN ? 0 : DELIVERY_FEE);
+  return { keys, subtotal, delivery, total: subtotal + delivery };
+}
+function logOrder(keys, subtotal, delivery, total, customer){
   const record = {
     id: "o" + Date.now() + Math.random().toString(36).slice(2, 7),
     ts: Date.now(),
     iso: new Date().toLocaleString("en-IN"),
+    name: (customer && customer.name) || "",
+    address: (customer && customer.address) || "",
+    phone: (customer && customer.phone) || "",
     items: keys.map(k => { const it = findItem(k); return { n: it.n, q: cart[k], p: it.p }; }),
     subtotal, delivery, total
   };
@@ -919,16 +964,46 @@ function logOrder(keys, subtotal, delivery, total){
   }catch(e){}
   return record;
 }
-$("#checkout").addEventListener("click", ()=>{
-  const keys = Object.keys(cart);
-  if(!keys.length){ showToast("Your order is empty"); return; }
+
+const omodal = $("#omodal"), oErr = $("#omodalErr");
+const closeOmodal = () => { omodal.classList.remove("on"); omodal.setAttribute("aria-hidden", "true"); };
+function openOmodal(){
+  const t = orderTotals();
+  if(!t.keys.length){ showToast("Your order is empty"); return; }
+  $("#omodalSummary").innerHTML = t.keys.length + " item" + (t.keys.length > 1 ? "s" : "") + " · total <b>" + rupees(t.total) + "</b>";
+  oErr.textContent = "";
+  ["#custName","#custAddr","#custPhone"].forEach(s => $(s).classList.remove("bad"));
+  omodal.classList.add("on"); omodal.setAttribute("aria-hidden", "false");
+  setTimeout(()=>{ $("#custName").focus(); }, 120);
+}
+$("#checkout").addEventListener("click", openOmodal);
+$("#omodalClose").addEventListener("click", closeOmodal);
+omodal.addEventListener("click", e => { if(e.target === omodal) closeOmodal(); });
+document.addEventListener("keydown", e => { if(e.key === "Escape" && omodal.classList.contains("on")) closeOmodal(); });
+
+$("#custSend").addEventListener("click", ()=>{
+  const name = $("#custName").value.trim();
+  const address = $("#custAddr").value.trim();
+  const phone = $("#custPhone").value.trim();
+  $("#custName").classList.toggle("bad", !name);
+  $("#custAddr").classList.toggle("bad", !address);
+  if(!name || !address){
+    oErr.textContent = "Please enter your name and delivery address to continue.";
+    (!name ? $("#custName") : $("#custAddr")).focus();
+    return;
+  }
+  const t = orderTotals();
+  if(!t.keys.length){ oErr.textContent = "Your order became empty — please add items again."; return; }
   const lines = ["Hi " + SET.name + ", I'd like to place an order:", ""];
-  keys.forEach(k=>{ const it=findItem(k); lines.push(`• ${it.n} x${cart[k]} — ${rupees(it.p*cart[k])}`); });
-  const subtotal = keys.reduce((s,k)=> s + findItem(k).p*cart[k], 0);
-  const delivery = subtotal >= FREE_DELIVERY_MIN ? 0 : DELIVERY_FEE;
-  lines.push("", `Item total: ${rupees(subtotal)}`, `Delivery: ${delivery===0?"FREE":rupees(delivery)}`, `Total: ${rupees(subtotal+delivery)}`, "", "Name: ", "Delivery address: ");
-  logOrder(keys, subtotal, delivery, subtotal + delivery);
+  t.keys.forEach(k=>{ const it = findItem(k); lines.push(`• ${it.n} x${cart[k]} — ${rupees(it.p*cart[k])}`); });
+  lines.push("", `Item total: ${rupees(t.subtotal)}`, `Delivery: ${t.delivery === 0 ? "FREE" : rupees(t.delivery)}`, `Total: ${rupees(t.total)}`,
+             "", "Name: " + name, "Delivery address: " + address);
+  if(phone) lines.push("Phone: " + phone);
+  logOrder(t.keys, t.subtotal, t.delivery, t.total, { name, address, phone });
   window.open(waLink(lines.join("\n")), "_blank");
+  closeOmodal();
+  cart = {}; renderCart(); closeCart();
+  showToast("Opening WhatsApp to send your order");
 });
 
 /* ---------- Toast ---------- */

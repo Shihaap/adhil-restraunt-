@@ -918,8 +918,16 @@ function renderOrders(){
   }
   box.innerHTML = list.map(o => {
     const items = (o.items || []).map(i => `<li><span>${escapeHtml(i.n)} × ${i.q}</span><span style="color:var(--gold-2)">${rupees(i.p * i.q)}</span></li>`).join("");
+    const cust = (o.name || o.address || o.phone)
+      ? `<div class="meta" style="margin-top:0;padding-bottom:10px;border-bottom:1px dashed var(--line)">
+           <span class="badge star">${escapeHtml(o.name || "Customer")}</span>
+           ${o.phone ? `<span class="badge">${escapeHtml(o.phone)}</span>` : ""}
+         </div>
+         ${o.address ? `<div class="hint" style="margin:0 0 10px;font-size:.8rem"><b>Deliver to:</b> ${escapeHtml(o.address)}</div>` : ""}`
+      : "";
     return `<div class="order-card">
       <div class="head"><span class="time">${escapeHtml(o.iso)}</span><span class="tot">${rupees(o.total)}</span></div>
+      ${cust}
       <ul>${items}</ul>
       <div class="meta">
         <span class="badge star">Items ${(o.items||[]).reduce((s,i)=>s+i.q,0)}</span>

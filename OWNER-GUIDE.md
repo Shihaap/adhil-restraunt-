@@ -144,6 +144,8 @@ passwords and data) are excluded automatically. Do not ever add them.
    and add `RESET_ADMIN` = `1`.
 2. **Save changes** → **Manual Deploy → Deploy latest commit**.
    The old hash is wiped and the new password takes effect on boot.
+   This also rotates the site's signing key and invalidates every existing
+   session (so any previously exposed secret stops working).
 3. Sign in with the new password.
 4. Then remove the `RESET_ADMIN` key and deploy again — otherwise the password
    would reset to the env value on every future deploy (your in-panel password
