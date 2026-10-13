@@ -83,10 +83,26 @@ Everything you need to run your own restaurant site. Keep this file safe and pri
 - Type current password + new password (min 8 characters, letters AND numbers), press **Change password**.
 - This signs you out everywhere; sign in again with the new password.
 
-### View orders
+### View and manage orders
 - Go to **Orders**. Orders made through the site appear here
   (and also land on your WhatsApp — that's still your main channel).
-- **Clear log** removes the on-panel copy; server-synced orders come back.
+- Every order starts as **New**. Each card shows the customer's name, phone and
+  delivery address, the items, and the total.
+- Move an order along with the buttons on the card. Each step also sends the
+  customer a WhatsApp update automatically:
+  - **Preparing** → customer gets "we have started preparing your order".
+  - **Out for delivery** → customer gets "your order is out for delivery".
+  - **Delivered** → customer gets a thank-you / delivered message.
+  - **Cancelled** → customer gets a cancellation message.
+  - **Re-send update** → sends the current message again.
+- Use the **filter chips** at the top (All / New / Preparing / Out for delivery /
+  Delivered / Cancelled) to see just one group; each chip shows a count.
+- **Refresh** re-pulls the latest orders from the server. **Clear log** removes
+  the on-panel copy; server-synced orders come back.
+- Status changes stick across devices (saved on the server). If the server is
+  unreachable they are kept on this device and marked "saved locally".
+- Messages need a phone number: if the customer left it blank, the status still
+  changes but no WhatsApp is sent.
 
 ### Sign out / offline mode
 - **Sign out** — left sidebar bottom, or Settings → Security → Sign out.
@@ -101,7 +117,7 @@ Everything you need to run your own restaurant site. Keep this file safe and pri
 ## 6. Hosting details (if you ever need to redeploy)
 
 - **Render (private backend + admin):** deployed from your GitHub repo
-  (`Shihaap/adhil-restraunt`, branch `main`). On every deploy Render clones
+  (`Shihaap/adhil-restraunt-`, branch `main`). On every deploy Render clones
   the repo and runs `node server.js`. Environment variables live in
   Dashboard → your service → **Environment**:
   - `ADMIN_PASSWORD` = your login password (**8+ chars**; used on a fresh boot

@@ -270,6 +270,7 @@ function sanitizeOrder(o){
     total: Math.max(0, Number(o.total) || 0)
   };
 }
+const ORDER_STATUSES = new Set(['new', 'preparing', 'out', 'delivered', 'cancelled']);
 
 /* ------------------------------------------------------- http plumbing */
 const MIME = {
@@ -365,6 +366,7 @@ const server = http.createServer((req, res) => {
       if(raw == null) return json(res, 413, { ok:false, error:'Request too large' });
       try{
         const order = sanitizeOrder(JSON.parse(raw).order);
+        order.status = 'new'; order.statusTs = order.ts;
         const list = readOrders(); list.push(order); saveOrders(list);
         json(res, 200, { ok:true, message:'Order recorded' });
       }catch(e){ json(res, 400, { ok:false, error: String(e.message || e) }); }
@@ -449,6 +451,24 @@ const server = http.createServer((req, res) => {
         logSec('PUBLISH', 'user=' + session.u + ' items=' + Object.values(saved.menu).flat().length);
         json(res, 200, { ok:true, ts: Date.now(), message:'Published — live site updated' });
       }catch(e){ json(res, 400, { ok:false, error: String(e.message || e) }); }
+    });
+  }
+
+  /* ------------------------------- admin: update an order's status */
+  if(method === 'POST' && url === '/api/orders/status'){
+    return body(req, raw => {
+      if(raw == null) return json(res, 413, { ok:false, error:'Request too large' });
+      try{
+        const { id, status } = JSON.parse(raw);
+        if(!ORDER_STATUSES.has(status)) return json(res, 400, { ok:false, error:'Unknown status' });
+        const list = readOrders();
+        const o = list.find(x => String(x.id) === String(id));
+        if(!o) return json(res, 404, { ok:false, error:'Order not found' });
+        o.status = status; o.statusTs = Date.now();
+        saveOrders(list);
+        logSec('ORDER-STATUS', 'user=' + session.u + ' id=' + o.id + ' status=' + status);
+        json(res, 200, { ok:true, order:o });
+      }catch(e){ json(res, 400, { ok:false, error:'Bad request body' }); }
     });
   }
 

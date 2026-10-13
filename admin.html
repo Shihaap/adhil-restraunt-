@@ -151,6 +151,23 @@
   .order-card li:last-child{border-bottom:none}
   .order-card .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
   .empty{padding:60px 20px;text-align:center;color:var(--muted)}
+  .filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+  .fchip{cursor:pointer;font-size:.75rem;font-weight:600;padding:7px 13px;border-radius:100px;border:1px solid var(--line);background:transparent;color:var(--muted);transition:.25s}
+  .fchip:hover{border-color:var(--gold);color:var(--gold-2)}
+  .fchip.on{background:rgba(231,180,92,.14);border-color:var(--line-2);color:var(--gold-2)}
+  .fchip b{font-weight:700}
+  .badge.new{color:#9fd0ff;border-color:rgba(96,165,250,.4);background:rgba(96,165,250,.1)}
+  .badge.preparing{color:var(--gold-2);border-color:var(--line-2);background:rgba(231,180,92,.1)}
+  .badge.out{color:#ffd77a;border-color:rgba(231,180,92,.45);background:rgba(231,180,92,.14)}
+  .badge.veg{color:#8ee59a;border-color:rgba(87,209,107,.35);background:rgba(87,209,107,.08)}
+  .badge.sold{color:#ef9a86;border-color:rgba(226,96,58,.4);background:rgba(226,96,58,.08)}
+  .ostep-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+  .obtn{cursor:pointer;font-size:.75rem;font-weight:600;padding:8px 14px;border-radius:100px;border:1px solid var(--line);background:transparent;color:#e2d6c4;transition:.25s}
+  .obtn:hover{border-color:var(--gold);color:var(--gold-2);transform:translateY(-1px)}
+  .obtn.primary{background:linear-gradient(120deg,var(--gold-2),var(--gold));color:#1a1206;border-color:transparent}
+  .badge.preparing,.obtn.danger{color:#ef9a86}
+  .obtn.danger{border-color:rgba(226,96,58,.4)}
+  .obtn.danger:hover{border-color:var(--red);color:#ffb3a0}
 
   /* publish */
   .pub-step{display:flex;gap:16px;padding:18px 0;border-bottom:1px dashed var(--line)}
@@ -283,9 +300,13 @@
     <!-- ORDERS -->
     <div class="view" id="view-orders">
       <div class="topbar">
-        <div><h2>Orders</h2><div class="sub">Orders logged when a shopper taps "Send Order on WhatsApp" on this site. Live orders also arrive on your WhatsApp directly.</div></div>
-        <button class="btn btn-red btn-sm" id="clearOrders">Clear log</button>
+        <div><h2>Orders</h2><div class="sub">Manage every order here — mark it preparing, out for delivery or delivered, and the customer gets a WhatsApp update. Live orders also arrive on your WhatsApp directly.</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" id="refreshOrders">Refresh</button>
+          <button class="btn btn-red btn-sm" id="clearOrders">Clear log</button>
+        </div>
       </div>
+      <div class="filter-bar" id="orderFilters"></div>
       <div id="ordersBox"></div>
     </div>
 
@@ -894,11 +915,70 @@ function saveItem(){
 }
 
 /* ================= orders ================= */
-function combinedOrders(){
+const ORDER_STATUS = {
+  new:       { label: "New",              badge: "new",       msg: false },
+  preparing: { label: "Preparing",        badge: "preparing", msg: true  },
+  out:       { label: "Out for delivery", badge: "out",       msg: true  },
+  delivered: { label: "Delivered",        badge: "veg",       msg: true  },
+  cancelled: { label: "Cancelled",        badge: "sold",      msg: true  }
+};
+const NEXT_STATUS = {
+  new:       ["preparing", "out", "cancelled"],
+  preparing: ["out", "delivered", "cancelled"],
+  out:       ["delivered", "cancelled"],
+  delivered: [],
+  cancelled: []
+};
+let orderFilter = "all";
+const orderStatus = o => (ORDER_STATUS[o.status] ? o.status : "new");
+
+function statusMessage(o, status){
+  const shop = (W.settings && W.settings.name) || "Aadil Restaurant";
+  const who = o.name || "there";
+  const total = rupees(o.total);
+  if(status === "preparing") return `Hi ${who}, thank you for your order at ${shop}. We have started preparing it — total ${total}, payable on delivery. We will message you again once it is on the way.`;
+  if(status === "out")       return `Hi ${who}, good news — your order from ${shop} is out for delivery. Total ${total}, payable on delivery. See you shortly!`;
+  if(status === "delivered") return `Hi ${who}, your order from ${shop} has been delivered. Thank you so much, and enjoy your meal!`;
+  if(status === "cancelled") return `Hi ${who}, we are sorry — your order from ${shop} has been cancelled. If this was a mistake or you would like to reorder, please call us on ${(W.settings && (W.settings.phoneDisplay || W.settings.phone)) || ""}.`;
+  return "";
+}
+function waPhone(p){
+  let d = String(p || "").replace(/\D/g, "");
+  if(d.length === 11 && d[0] === "0") d = d.slice(1);
+  if(d.length === 10) d = "91" + d;
+  return d;
+}
+function waLinkFor(phone, text){ return "https://wa.me/" + waPhone(phone) + "?text=" + encodeURIComponent(text); }
+function sendStatusWhatsApp(o, status, manual){
+  const text = statusMessage(o, status);
+  if(!text){ if(manual) toast("No update to send for this order yet"); return; }
+  if(!o.phone){ toast("No phone number on this order — cannot message the customer"); return; }
+  window.open(waLinkFor(o.phone, text), "_blank");
+}
+async function setOrderStatus(id, status){
+  const def = ORDER_STATUS[status]; if(!def) return;
   const local = orderList();
-  const seen = new Set(local.map(o => o.id).filter(Boolean));
-  const extra = serverOrders.filter(o => o.id && !seen.has(o.id));
-  return local.concat(extra);
+  const li = local.find(o => String(o.id) === String(id));
+  if(li){ li.status = status; li.statusTs = Date.now(); localStorage.setItem("aadil_orders", JSON.stringify(local)); }
+  const so = serverOrders.find(o => String(o.id) === String(id));
+  if(so){ so.status = status; so.statusTs = Date.now(); }
+  renderOrders();
+  if(token && serverBase() && so){
+    const j = await apiJSON("/api/orders/status", { method: "POST", body: JSON.stringify({ id, status }) });
+    toast(j.ok ? "Order marked " + def.label.toLowerCase() : "Saved locally — server " + (j.error || ("http-" + (j.httpStatus || 0))));
+  } else {
+    toast("Order marked " + def.label.toLowerCase());
+  }
+  const o = li || so;
+  if(o && def.msg) sendStatusWhatsApp(o, status);
+}
+
+function combinedOrders(){
+  const byId = new Map();
+  orderList().forEach(o => { if(o && o.id) byId.set(String(o.id), o); });
+  serverOrders.forEach(o => { if(o && o.id) byId.set(String(o.id), o); });
+  const noId = orderList().filter(o => o && !o.id);
+  return noId.concat([...byId.values()]);
 }
 async function pullServerOrders(){
   const base = serverBase();
@@ -910,13 +990,27 @@ async function pullServerOrders(){
   renderOrders();
 }
 function renderOrders(){
-  const list = combinedOrders().slice().reverse();
-  const box = $("#ordersBox");
-  if(!list.length){
+  const all = combinedOrders().slice().reverse();
+  const box = $("#ordersBox"), filters = $("#orderFilters");
+  if(!all.length){
+    filters.innerHTML = "";
     box.innerHTML = `<div class="empty">No orders logged yet.<br/><br/>When someone on this device taps "Send Order on WhatsApp", the order is recorded here and opened in WhatsApp.<br/><br/><b>Note:</b> orders placed by other visitors arrive straight on your WhatsApp — that's the live channel${serverBase() ? " (also synced to this panel via the live server)" : ""}.</div>`;
     return;
   }
+  const counts = { all: all.length };
+  Object.keys(ORDER_STATUS).forEach(s => counts[s] = 0);
+  all.forEach(o => { counts[orderStatus(o)]++; });
+  filters.innerHTML = ["all", ...Object.keys(ORDER_STATUS)].map(s => {
+    const label = s === "all" ? "All" : ORDER_STATUS[s].label;
+    return `<button class="fchip ${orderFilter === s ? "on" : ""}" data-filter="${s}">${label} <b>${counts[s] || 0}</b></button>`;
+  }).join("");
+  const list = orderFilter === "all" ? all : all.filter(o => orderStatus(o) === orderFilter);
+  if(!list.length){
+    box.innerHTML = `<div class="empty">No ${ORDER_STATUS[orderFilter].label.toLowerCase()} orders right now.</div>`;
+    return;
+  }
   box.innerHTML = list.map(o => {
+    const st = orderStatus(o), def = ORDER_STATUS[st];
     const items = (o.items || []).map(i => `<li><span>${escapeHtml(i.n)} × ${i.q}</span><span style="color:var(--gold-2)">${rupees(i.p * i.q)}</span></li>`).join("");
     const cust = (o.name || o.address || o.phone)
       ? `<div class="meta" style="margin-top:0;padding-bottom:10px;border-bottom:1px dashed var(--line)">
@@ -925,17 +1019,42 @@ function renderOrders(){
          </div>
          ${o.address ? `<div class="hint" style="margin:0 0 10px;font-size:.8rem"><b>Deliver to:</b> ${escapeHtml(o.address)}</div>` : ""}`
       : "";
+    const actions = (NEXT_STATUS[st] || []).map(ns => {
+      const cls = ns === "delivered" ? "obtn primary" : (ns === "cancelled" ? "obtn danger" : "obtn");
+      return `<button class="${cls}" data-ostep="${ns}" data-oid="${escapeHtml(o.id)}">${ORDER_STATUS[ns].label}</button>`;
+    }).join("");
+    const msgBtn = o.phone ? `<button class="obtn" data-omsg="${escapeHtml(o.id)}">Re-send update</button>` : "";
     return `<div class="order-card">
-      <div class="head"><span class="time">${escapeHtml(o.iso)}</span><span class="tot">${rupees(o.total)}</span></div>
+      <div class="head">
+        <span class="time">${escapeHtml(o.iso)}</span>
+        <span class="badge ${def.badge}">${def.label}</span>
+        <span class="tot">${rupees(o.total)}</span>
+      </div>
       ${cust}
       <ul>${items}</ul>
       <div class="meta">
         <span class="badge star">Items ${(o.items||[]).reduce((s,i)=>s+i.q,0)}</span>
         <span class="badge ${o.delivery === 0 ? "veg" : ""}">Delivery ${o.delivery === 0 ? "FREE" : rupees(o.delivery)}</span>
       </div>
+      ${(actions || msgBtn) ? `<div class="ostep-row">${actions}${msgBtn}</div>` : ""}
     </div>`;
   }).join("");
 }
+document.addEventListener("click", e => {
+  const f = e.target.closest("[data-filter]");
+  if(f){ orderFilter = f.dataset.filter; renderOrders(); return; }
+  const step = e.target.closest("[data-ostep]");
+  if(step){ setOrderStatus(step.dataset.oid, step.dataset.ostep); return; }
+  const msg = e.target.closest("[data-omsg]");
+  if(msg){
+    const o = combinedOrders().find(x => String(x.id) === String(msg.dataset.omsg));
+    if(o) sendStatusWhatsApp(o, orderStatus(o), true);
+  }
+});
+$("#refreshOrders").addEventListener("click", () => {
+  if(token && serverBase()) pullServerOrders();
+  else { renderOrders(); toast("Signed out — showing this device's orders"); }
+});
 $("#clearOrders").addEventListener("click", () => {
   if(!confirm("Clear all logged orders on this panel? (server-synced orders will re-appear)")) return;
   localStorage.removeItem("aadil_orders"); renderOrders(); toast("Order log cleared");
