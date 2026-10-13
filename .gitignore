@@ -1,0 +1,12 @@
+# Runtime state — these contain secrets or are regenerated automatically.
+# MUST NOT be committed or ever uploaded to GitHub.
+auth.json
+secret.key
+sessions.json
+store.json
+orders.json
+security.log
+
+# Generated/cache
+node_modules/
+*.log

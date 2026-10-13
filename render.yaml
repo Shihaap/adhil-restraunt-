@@ -1,0 +1,27 @@
+# Render.com blueprint — one-click deploy for the Aadil Restaurant secure backend.
+#
+# 1. Sign up at https://render.com (free)
+# 2. "New > Blueprint", connect this GitHub repo (or use "New > Web Service"
+#    with a public repo / direct from files).
+# 3. Set ADMIN_PASSWORD to a strong password BEFORE first deploy (see below).
+# 4. Set ALLOW_ORIGIN to your public site origin(s) (see below).
+# 5. Deploy. Done — auto-publish + secured admin panel at the Render URL.
+
+services:
+  - type: web
+    name: aadil-restaurant
+    runtime: node
+    plan: free                     # free tier; spins down when idle, wakes on visit
+    buildCommand: ""               # zero-dependency app, nothing to build
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      # !! CHANGE THIS before deploying — the admin login password (min 8 chars) !!
+      - key: ADMIN_PASSWORD
+        value: CHANGE_ME_UseA_LongPassword123
+      # Origins allowed to call the API from a browser (comma separated, no slash at end).
+      # Add your public site / mirror here, e.g. https://aadil-restaurant.surge.sh
+      - key: ALLOW_ORIGIN
+        value: https://aadil-restaurant.surge.sh
+      - key: NODE_ENV
+        value: production

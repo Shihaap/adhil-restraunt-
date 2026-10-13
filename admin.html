@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Admin — Aadil Restaurant</title>
+<link rel="icon" type="image/png" href="logo-256.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#100b08;--ink-2:#17100a;--ink-3:#20160d;
+    --cream:#f7efe3;--gold:#e7b45c;--gold-2:#f6d68a;--spice:#c8451f;
+    --muted:#a29480;--line:rgba(231,180,92,.16);--line-2:rgba(231,180,92,.34);
+    --green:#57d16b;--green-2:#16441e;--red:#e2603a;--red-2:#3d1a10;
+    --radius:16px;--shadow:0 24px 50px -28px rgba(0,0,0,.9);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--ink);color:var(--cream);font-family:'Inter',sans-serif;font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{text-decoration:none;color:inherit}
+  button{font-family:inherit;cursor:pointer}
+  input,select,textarea{font-family:inherit;font-size:.92rem;color:var(--cream);background:var(--ink-3);border:1px solid var(--line);border-radius:10px;padding:11px 13px;width:100%;outline:none;transition:border-color .25s}
+  input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+  input[type=checkbox]{width:18px;height:18px;accent-color:var(--gold)}
+  label{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:block;margin:14px 0 7px;font-weight:600}
+  .serif{font-family:'Cormorant Garamond',serif}
+  .shell{display:grid;grid-template-columns:235px 1fr;min-height:100vh}
+  .card{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
+  .btn{border:none;border-radius:100px;font-weight:600;font-size:.84rem;padding:11px 20px;display:inline-flex;align-items:center;gap:8px;transition:.25s;white-space:nowrap}
+  .btn .s{width:0;overflow:hidden;transition:width .3s}
+  .btn:hover .s{width:8px}
+  .btn-gold{background:linear-gradient(120deg,var(--gold-2),var(--gold));color:#1a1206;box-shadow:0 14px 30px -14px rgba(231,180,92,.8)}
+  .btn-gold:hover{transform:translateY(-1px)}
+  .btn-ghost{background:transparent;color:var(--cream);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--gold);color:var(--gold-2)}
+  .btn-red{background:transparent;color:#ef9a86;border:1px solid rgba(226,96,58,.4)}
+  .btn-red:hover{background:var(--red-2)}
+  .btn-green{background:transparent;color:#8ee59a;border:1px solid rgba(87,209,107,.35)}
+  .btn-green:hover{background:var(--green-2)}
+  .btn-sm{padding:7px 13px;font-size:.76rem}
+.btn-green.sel{background:var(--green);color:#07130a;border-color:transparent}
+.btn-red.sel{background:var(--red);color:#fff;border-color:transparent}
+  .row{display:flex;gap:12px;align-items:center}
+  .between{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+
+  /* toast */
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:linear-gradient(120deg,var(--gold-2),var(--gold));color:#1a1206;font-weight:600;font-size:.85rem;padding:12px 22px;border-radius:100px;z-index:2000;transition:transform .4s cubic-bezier(.34,1.56,.64,1);box-shadow:var(--shadow);max-width:92vw}
+  .toast.on{transform:translateX(-50%) translateY(0)}
+
+  /* login */
+  #login{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:radial-gradient(90% 90% at 50% 0%,#24170c,var(--ink) 70%);padding:20px}
+  #login .box{width:min(380px,100%);background:var(--ink-2);border:1px solid var(--line);border-radius:22px;padding:38px 32px;text-align:center;box-shadow:var(--shadow)}
+  #login img{width:64px;height:64px;border-radius:50%;object-fit:cover;margin:0 auto 14px;box-shadow:0 0 0 1px var(--line-2)}
+  #login h1{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:600}
+  #login p{color:var(--muted);font-size:.85rem;margin-top:4px}
+  #login form{margin-top:24px;text-align:left}
+  #login .err{color:#ef9a86;font-size:.8rem;margin-top:10px;min-height:1.2em}
+  #login .btn{width:100%;justify-content:center;margin-top:8px}
+  #login .login-sec{font-size:.72rem;color:var(--gold-2);background:rgba(231,180,92,.08);border:1px solid rgba(231,180,92,.25);border-radius:10px;padding:8px 10px;margin-bottom:16px;text-align:center}
+  #login .login-sec.off{color:#ef9a86;background:rgba(226,96,58,.08);border-color:rgba(226,96,58,.3)}
+  #login .linkish{background:none;border:none;color:var(--gold-2);text-decoration:underline;cursor:pointer;font-size:.75rem}
+  #login .login-off{font-size:.72rem;color:var(--muted);margin-top:14px;display:flex;flex-direction:column;gap:6px;text-align:center}
+  #login .login-off.msg{color:#ef9a86}
+  #app{display:none}
+
+  /* sidebar (desktop) */
+  aside{background:var(--ink-2);border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh;overflow-y:auto}
+  aside .brand{display:flex;align-items:center;gap:11px;padding:4px 8px 18px;border-bottom:1px solid var(--line);margin-bottom:14px}
+  aside .brand img{width:42px;height:42px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 1px var(--line-2)}
+  aside .brand b{font-family:'Cormorant Garamond',serif;font-size:1.25rem;display:block;line-height:1.1}
+  aside .brand span{font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold)}
+  .nav-btn{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid transparent;background:none;color:var(--muted);font-size:.9rem;font-weight:500;transition:.25s;width:100%;text-align:left}
+  .nav-btn:hover{color:var(--cream);background:var(--ink-3)}
+  .nav-btn.active{color:var(--gold-2);background:linear-gradient(100deg,rgba(231,180,92,.12),transparent);border-color:var(--line)}
+  .nav-btn svg{width:19px;height:19px;flex:none}
+  aside .foot{margin-top:auto;padding-top:18px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+  aside .foot a,#logout{font-size:.82rem;color:var(--muted);padding:9px 12px;border-radius:10px;display:flex;align-items:center;gap:10px;border:1px solid transparent;background:none;font-family:inherit;cursor:pointer}
+  aside .foot a:hover,#logout:hover{color:var(--gold-2);border-color:var(--line)}
+
+  main{padding:28px 32px 60px;max-width:1180px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:26px}
+  .topbar h2{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;line-height:1}
+  .topbar .sub{color:var(--muted);font-size:.85rem;margin-top:3px}
+  .status{display:inline-flex;align-items:center;gap:8px;padding:7px 13px;border-radius:100px;font-size:.74rem;font-weight:700;border:1px solid var(--line)}
+  .status .dot{width:8px;height:8px;border-radius:50%}
+  .status.open{color:#8ee59a;border-color:rgba(87,209,107,.35);background:rgba(87,209,107,.08)}
+  .status.open .dot{background:var(--green);box-shadow:0 0 0 0 rgba(87,209,107,.6);animation:ping 2s infinite}
+  .status.closed{color:#ef9a86;border-color:rgba(226,96,58,.35);background:rgba(226,96,58,.08)}
+  .status.closed .dot{background:var(--red)}
+  @keyframes ping{0%{box-shadow:0 0 0 0 rgba(87,209,107,.5)}70%{box-shadow:0 0 0 8px rgba(87,209,107,0)}100%{box-shadow:0 0 0 0}}
+
+  .view{display:none}
+  .view.on{display:block;animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}}
+
+  /* dashboard */
+  .statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:24px}
+  .stat{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px}
+  .stat .lbl{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .stat .val{font-family:'Cormorant Garamond',serif;font-size:2.3rem;color:var(--gold-2);line-height:1.1;margin-top:6px}
+  .stat .sub{font-size:.78rem;color:var(--muted);margin-top:4px}
+  .quick{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .switch{position:relative;display:inline-flex;align-items:center;gap:10px;font-weight:600;font-size:.9rem}
+  .switch input{position:absolute;opacity:0}
+  .switch .tr{width:46px;height:26px;border-radius:100px;background:#2c2118;border:1px solid var(--line);position:relative;transition:.3s;flex:none}
+  .switch .tr::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--cream);transition:.3s}
+  .switch input:checked + .tr{background:rgba(87,209,107,.35);border-color:rgba(87,209,107,.5)}
+  .switch input:checked + .tr::after{left:23px;background:var(--green)}
+
+  /* menu manager */
+  .mgr-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+  .cats{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 20px}
+  .cat{border:1px solid var(--line);background:transparent;color:#d9c9b2;padding:9px 17px;border-radius:100px;font-size:.84rem;font-weight:500;transition:.25s}
+  .cat:hover{border-color:var(--gold)}
+  .cat.active{background:linear-gradient(120deg,var(--gold-2),var(--gold));color:#1a1206;font-weight:700;border-color:transparent}
+  .table{width:100%;border-collapse:collapse;background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .table th{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);text-align:left;padding:13px 16px;background:var(--ink-3);border-bottom:1px solid var(--line);font-weight:700}
+  .table td{padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+  .table tr:last-child td{border-bottom:none}
+  .table .thumb{width:52px;height:52px;border-radius:11px;object-fit:cover;background:#2c2118}
+  .name{font-weight:600;font-size:.92rem}
+  .name small{display:block;color:var(--muted);font-weight:400;font-size:.74rem;max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:.66rem;font-weight:600;padding:4px 9px;border-radius:100px;border:1px solid}
+  .badge.sold{color:#ef9a86;border-color:rgba(226,96,58,.4);background:rgba(226,96,58,.08)}
+  .badge.veg{color:#8ee59a;border-color:rgba(87,209,107,.35);background:rgba(87,209,107,.08)}
+  .badge.star{color:var(--gold-2);border-color:var(--line-2);background:rgba(231,180,92,.08)}
+  .tbl-actions{display:flex;gap:6px;justify-content:flex-end}
+
+  /* modal */
+  #modal{position:fixed;inset:0;z-index:150;display:none;place-items:center;background:rgba(5,3,2,.7);backdrop-filter:blur(5px);padding:20px}
+  #modal.on{display:grid}
+  #modal .box{width:min(600px,100%);max-height:92vh;overflow-y:auto;background:var(--ink-2);border:1px solid var(--line);border-radius:20px;padding:28px}
+  #modal h3{font-family:'Cormorant Garamond',serif;font-size:1.6rem;margin-bottom:6px}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+  .full{grid-column:1/-1}
+  .imgrow{display:flex;align-items:center;gap:14px;margin:14px 0}
+  .imgrow img{width:64px;height:64px;border-radius:12px;object-fit:cover;background:#2c2118}
+  .checks{display:flex;gap:22px;flex-wrap:wrap;margin:12px 0}
+  .checks label{display:flex;align-items:center;gap:8px;margin:0;text-transform:none;letter-spacing:0;font-size:.88rem;color:var(--cream);cursor:pointer}
+  .modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}
+
+  /* orders */
+  .order-card{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px}
+  .order-card .head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+  .order-card .time{color:var(--gold-2);font-size:.8rem;font-weight:600}
+  .order-card .tot{font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--gold-2)}
+  .order-card ul{list-style:none}
+  .order-card li{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line);font-size:.88rem;color:#e2d6c4}
+  .order-card li:last-child{border-bottom:none}
+  .order-card .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .empty{padding:60px 20px;text-align:center;color:var(--muted)}
+
+  /* publish */
+  .pub-step{display:flex;gap:16px;padding:18px 0;border-bottom:1px dashed var(--line)}
+  .pub-step:last-child{border-bottom:none}
+  .pub-step .num{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;background:linear-gradient(120deg,var(--gold-2),var(--gold));color:#1a1206;font-weight:700}
+  .pub-step p{color:var(--muted);font-size:.88rem}
+  .pub-step p b{color:var(--cream)}
+
+  .hint{font-size:.78rem;color:var(--muted);background:var(--ink-3);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-top:14px}
+  .hint code{color:var(--gold-2)}
+
+  @media(max-width:900px){
+    .shell{grid-template-columns:1fr}
+    aside{position:fixed;left:0;right:0;top:0;height:auto;z-index:90;flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px 16px;border-right:none;border-bottom:1px solid var(--line)}
+    aside .brand{padding:0;margin:0;border:none;margin-right:auto}
+    aside .brand span{display:none}
+    aside .nav-btn{width:auto;padding:9px 12px;font-size:.8rem}
+    aside .nav-btn span{display:none}
+    aside .foot{display:none}
+    main{padding:120px 18px 70px}
+    .form-grid{grid-template-columns:1fr}
+    .quick{grid-template-columns:1fr}
+    .stats-hint{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast">Saved</div>
+
+<!-- Login -->
+<div id="login">
+  <div class="box">
+    <img src="logo-256.png" alt="Aadil Restaurant logo" />
+    <h1>Aadil Restaurant</h1>
+    <p>Owner panel · sign in to manage your site</p>
+    <form id="loginForm">
+      <div class="login-sec" id="loginServer">Checking secure backend…</div>
+      <label>Username</label>
+      <input type="text" id="user" value="admin" autocomplete="username" />
+      <label>Password</label>
+      <input type="password" id="pw" autocomplete="current-password" placeholder="Enter admin password" />
+      <div class="err" id="pwErr"></div>
+      <button class="btn btn-gold" type="submit" id="loginBtn" style="width:100%;justify-content:center">Sign in</button>
+      <div class="login-off" id="offlineRow" style="display:none">
+        <span>No secure backend detected.</span>
+        <button type="button" class="linkish" id="offlineBtn">Continue offline (preview only)</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- App -->
+<div class="shell" id="app">
+  <aside>
+    <div class="brand"><img src="logo-256.png" alt="logo" /><b class="serif">Admin</b></div>
+    <button class="nav-btn active" data-view="dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="9" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="5.5" rx="1.5"/><rect x="13.5" y="12" width="7.5" height="9" rx="1.5"/><rect x="3" y="15.5" width="7.5" height="5.5" rx="1.5"/></svg> Dashboard <span class="s"></span></button>
+    <button class="nav-btn" data-view="menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M4 12h16M4 19h10"/></svg> Menu <span class="s"></span></button>
+    <button class="nav-btn" data-view="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1.4"/><circle cx="19" cy="21" r="1.4"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg> Orders <span id="ordBadge" class="s"></span></button>
+    <button class="nav-btn" data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Settings <span class="s"></span></button>
+    <button class="nav-btn" data-view="publish"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg> Publish <span class="s"></span></button>
+    <div class="foot">
+      <a href="index.html" target="_blank">&larr; View live site</a>
+      <button id="logout">Sign out</button>
+    </div>
+  </aside>
+
+  <main>
+    <!-- DASHBOARD -->
+    <div class="view on" id="view-dash">
+      <div class="topbar">
+        <div><h2>Dashboard</h2><div class="sub" id="dashGreet"></div></div>
+        <span class="status" id="dashStatus"><span class="dot"></span><span>—</span></span>
+      </div>
+      <div class="statgrid">
+        <div class="stat"><div class="lbl">Menu items</div><div class="val" id="stItems">0</div><div class="sub" id="stCats"></div></div>
+        <div class="stat"><div class="lbl">Bestsellers</div><div class="val" id="stStars">0</div><div class="sub">shown in Signature section</div></div>
+        <div class="stat"><div class="lbl">Orders today</div><div class="val" id="stOrders">0</div><div class="sub">placed from this site</div></div>
+        <div class="stat"><div class="lbl">Revenue today</div><div class="val" id="stRev">₹0</div><div class="sub">tracked via order log</div></div>
+      </div>
+      <div class="quick">
+        <div class="card">
+          <div class="between" style="margin-bottom:6px">
+            <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem">Shop status</h2>
+<span class="status" id="dashStatus2"><span class="dot"></span><span>—</span></span>
+          </div>
+          <p class="sub" style="color:var(--muted);font-size:.85rem;margin-bottom:14px">One tap flips your entire live site to OPEN or CLOSED, everywhere.</p>
+          <div class="row">
+            <button class="btn btn-green" id="btnOpen" style="flex:1;justify-content:center;padding:14px">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> OPEN
+            </button>
+            <button class="btn btn-red" id="btnClose" style="flex:1;justify-content:center;padding:14px">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg> CLOSED
+            </button>
+          </div>
+          <div class="hint" style="margin-top:14px" id="fcNote">Toggle OFF pauses ordering (sold out, holiday, staff shortage). Toggle ON resumes the normal service-hours Open/Closed logic.</div>
+        </div>
+        <div class="card">
+          <div class="between" style="margin-bottom:6px">
+            <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem">Live server</h2>
+            <span class="status" id="srvStatus" style="font-size:.7rem"><span class="dot"></span><span>checking…</span></span>
+          </div>
+          <p class="sub" style="color:var(--muted);font-size:.85rem;margin-bottom:14px" id="srvHint">When connected, every save goes live instantly — no copy/paste.</p>
+          <div class="row" style="flex-wrap:wrap">
+            <button class="btn btn-gold btn-sm" id="dashDeploy">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg> Deploy to live server now
+            </button>
+            <a class="btn btn-ghost btn-sm" href="index.html" target="_blank">View live site</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MENU -->
+    <div class="view" id="view-menu">
+      <div class="topbar">
+        <div><h2>Menu manager</h2><div class="sub">Add, edit, price and hide dishes. Changes save to this device instantly and can be published as data.js.</div></div>
+        <button class="btn btn-gold" id="addItemBtn">Add item</button>
+      </div>
+      <div class="card" style="margin-bottom:20px">
+        <div class="row" style="flex-wrap:wrap">
+          <div style="flex:1;min-width:220px"><label>New category name</label><div class="row"><input id="newCat" placeholder="e.g. Desserts" style="margin-top:7px"/><button class="btn btn-ghost btn-sm" id="addCat" style="margin-top:7px">Add</button></div></div>
+          <div style="flex:1;min-width:220px"><label>Selected category</label><div class="row" id="catTools"></div></div>
+        </div>
+      </div>
+      <div class="cats" id="cats"></div>
+      <div class="table" id="menuTable"></div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="view" id="view-orders">
+      <div class="topbar">
+        <div><h2>Orders</h2><div class="sub">Orders logged when a shopper taps "Send Order on WhatsApp" on this site. Live orders also arrive on your WhatsApp directly.</div></div>
+        <button class="btn btn-red btn-sm" id="clearOrders">Clear log</button>
+      </div>
+      <div id="ordersBox"></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="view" id="view-settings">
+      <div class="topbar">
+        <div><h2>Settings</h2><div class="sub">Business details, hours, delivery pricing and social links.</div></div>
+      </div>
+      <div class="card">
+        <div class="form-grid">
+          <div><label>Restaurant name</label><input id="sName"/></div>
+          <div><label>Short name (logo)</label><input id="sShort"/></div>
+          <div><label>Phone (tel: link)</label><input id="sPhone" placeholder="+917010361388"/></div>
+          <div><label>Phone (display)</label><input id="sPhoneDisp" placeholder="+91 70103 61388"/></div>
+          <div><label>WhatsApp number (country code + number, digits only)</label><input id="sWa" placeholder="917010361388"/></div>
+          <div><label>Area / city</label><input id="sArea"/></div>
+          <div class="full"><label>Full address</label><input id="sAddress"/></div>
+          <div><label>Latitude</label><input id="sLat"/></div>
+          <div><label>Longitude</label><input id="sLng"/></div>
+          <div><label>Currency symbol</label><input id="sCur" placeholder="₹"/></div>
+          <div><label>Average cost (₹)</label><input id="sAvg" type="number"/></div>
+          <div><label>Delivery fee (₹)</label><input id="sDelFee" type="number"/></div>
+          <div><label>Free delivery over (₹)</label><input id="sFreeMin" type="number"/></div>
+          <div><label>Rating</label><input id="sRating" type="number" step="0.1"/></div>
+          <div><label>Rating count</label><input id="sRatingCnt" type="number"/></div>
+          <div><label>Instagram URL</label><input id="sIg"/></div>
+          <div><label>Facebook URL</label><input id="sFb"/></div>
+          <div class="full"><label>Closed notice (shown when paused)</label><input id="sClosedMsg"/></div>
+        </div>
+        <label>Service hours</label>
+        <div id="hoursRows"></div>
+        <button class="btn btn-ghost btn-sm" id="addHour">Add a service window</button>
+        <label>Announcement bar items</label>
+        <div id="annRows"></div>
+        <button class="btn btn-ghost btn-sm" id="addAnn">Add announcement line</button>
+        <div class="between" style="margin-top:24px">
+          <div></div>
+          <button class="btn btn-gold" id="saveSettings">Save settings</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:20px">
+        <div class="between">
+          <div>
+            <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem">Live server (auto-publish)</h2>
+            <p class="sub" style="color:var(--muted);font-size:.85rem;margin-top:4px">When connected, every save in this panel updates the live site instantly — no copy/paste. Run <code>node server.js</code> in this folder (or deploy it to a Node host), then set the URL here.</p>
+          </div>
+          <span class="status" id="srvSt2"><span class="dot"></span><span>—</span></span>
+        </div>
+        <div style="margin-top:10px"><label>Server URL (e.g. https://aadil.onrender.com or http://localhost:3000)</label>
+          <input id="srvUrl" placeholder="http://localhost:3000"/></div>
+        <div class="row" style="flex-wrap:wrap;align-items:center;margin-top:12px">
+          <label class="switch" style="margin-right:14px">
+            <input type="checkbox" id="srvAuto">
+            <span class="tr"></span>
+            <span>Auto-publish after every save</span>
+          </label>
+          <button class="btn btn-ghost btn-sm" id="srvTest">Test connection</button>
+          <button class="btn btn-gold btn-sm" id="srvDeployNow">Deploy now</button>
+        </div>
+        <div class="hint" style="font-size:.74rem">Left blank, the panel uses its own domain automatically when served by <code>server.js</code>. For file:// preview you must type the URL.</div>
+      </div>
+      <div class="card" style="margin-top:20px">
+        <div class="between">
+          <div>
+            <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem">Security</h2>
+            <p class="sub" style="color:var(--muted);font-size:.85rem;margin-top:4px">Password is stored <b>scrypt-hashed on the server only</b> — never in any file visitors see. Changing it signs out everywhere.</p>
+          </div>
+          <span class="status" id="secStatus"><span class="dot"></span><span>—</span></span>
+        </div>
+        <div class="row" style="flex-wrap:wrap;margin-top:10px">
+          <div style="flex:1;min-width:200px"><label>Current password</label><input id="sCurPw" type="password" autocomplete="current-password"/></div>
+          <div style="flex:1;min-width:200px"><label>New password (min 8, letters + numbers)</label><input id="sNewPw" type="password" autocomplete="new-password"/></div>
+        </div>
+        <div class="row" style="margin-top:12px;justify-content:space-between">
+          <button class="btn btn-ghost" id="savePw">Change password</button>
+          <button class="btn btn-red" id="secLogout">Sign out</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PUBLISH -->
+    <div class="view" id="view-publish">
+      <div class="topbar">
+        <div><h2>Publish</h2><div class="sub">Get your changes onto the live site for every visitor.</div></div>
+      </div>
+      <div class="card">
+        <div class="pub-step">
+          <div class="num">1</div>
+          <div><b>Edit &amp; save here</b><p>Your edits are stored in this browser (localStorage) so you can preview them instantly by opening <code>index.html</code> on this same device.</p></div>
+        </div>
+        <div class="pub-step">
+          <div class="num">2</div>
+          <div><b>Download data.js</b><p>Click below to export everything — menu, prices, hours, contact details — into a single file.</p></div>
+        </div>
+        <div class="pub-step">
+          <div class="num">3</div>
+          <div><b>Upload to your host</b><p>Replace the old <code>data.js</code> next to <code>index.html</code> on your hosting (Netlify, GitHub Pages, Hostinger…). Done — every visitor sees the new content.</p></div>
+        </div>
+        <div class="row" style="margin-top:22px;flex-wrap:wrap">
+          <button class="btn btn-gold" id="downloadData">Download data.js</button>
+          <button class="btn btn-ghost" id="copyData">Copy JSON</button>
+          <button class="btn btn-ghost" id="saveLocal">Save to this device only</button>
+          <button class="btn btn-red" id="resetData">Reset to defaults</button>
+        </div>
+        <div class="hint"><code>data.js</code> currently on this device: <b id="pubState">defaults</b> · last saved: <span id="pubLast">never</span> · <span id="pubServer"></span><br/><br/>
+          <b>Connected to the live server?</b> Every save in this panel deploys to all visitors instantly — downloading is just a backup.<br/>
+          <b>No server?</b> Use the 3 steps above: download <code>data.js</code> and re-upload it to your host.</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div id="modal">
+  <div class="box">
+    <h3 id="mTitle">Edit item</h3>
+    <div class="imgrow">
+      <img id="mImg" src="" alt="" />
+      <div style="flex:1;min-width:0">
+        <label style="margin-top:0">Image — preset or paste any image URL</label>
+        <div class="row" style="margin-top:7px">
+          <select id="mImgKey" style="flex:1"></select>
+          <input id="mImgUrl" placeholder="Custom image URL (https://…)" value="" />
+        </div>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div><label>Dish name *</label><input id="mName" placeholder="e.g. Chicken Dum Biryani"/></div>
+      <div><label>Price (₹) *</label><input id="mPrice" type="number" placeholder="180"/></div>
+      <div><label>Category</label><select id="mCat"></select></div>
+      <div><label>Description</label><input id="mDesc" placeholder="Short, mouth-watering line…"/></div>
+    </div>
+    <div class="checks">
+      <label><input type="checkbox" id="mVeg"/> Vegetarian</label>
+      <label><input type="checkbox" id="mStar"/> Bestseller (shows in Signature)</label>
+      <label><input type="checkbox" id="mAvail" checked/> Available</label>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="mCancel">Cancel</button>
+      <button class="btn btn-gold" id="mSave">Save item</button>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+/* ================= data layer ================= */
+const BASE = window.AADIL;
+const LS_KEY = "aadil_data";
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const rupees = n => (BASE.settings.currency || "₹") + Number(n || 0).toLocaleString("en-IN");
+const pretty = hhmm => { const [h,m] = (hhmm || "0:0").split(":").map(Number); const ap = h >= 12 ? "PM" : "AM", hr = (h % 12) || 12; return hr + ":" + String(m).padStart(2, "0") + " " + ap; };
+
+let over = null;
+try{ over = JSON.parse(localStorage.getItem(LS_KEY) || "null"); }catch(e){}
+const W = {
+  settings: Object.assign({}, BASE.settings, (over && over.settings) || {}),
+  images:   Object.assign({}, BASE.images, (over && over.images) || {}),
+  menu:     (over && over.menu) ? over.menu : JSON.parse(JSON.stringify(BASE.menu))
+};
+let D = JSON.parse(JSON.stringify(W));   /* working draft */
+
+const saveToLocal = () => localStorage.setItem(LS_KEY, JSON.stringify({
+  settings: W.settings, images: W.images, menu: W.menu
+}));
+
+/* ================= live server (auto-publish) ================= */
+const PREFS_KEY = "aadil_prefs";
+let prefs = { serverUrl: "", autoPublish: false };
+try{ prefs = Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS_KEY) || "{}")); }catch(e){}
+const savePrefs = () => localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+let serverOrders = [];
+
+function serverBase(){
+  const u = (prefs.serverUrl || "").trim().replace(/\/+$/, "");
+  if(u) return u;
+  return /^https?:$/.test(location.protocol) ? location.origin : "";
+}
+async function fetchJSON(url, opts){
+  const r = await fetch(url, opts);
+  try{ return await r.json(); }catch(e){ return { httpStatus: r.status }; }
+}
+async function apiJSON(path, opts){
+  const base = serverBase();
+  if(!base) return { httpStatus: 0, ok: false, error: "no-server" };
+  const o = opts || {};
+  o.headers = Object.assign({}, o.headers || {});
+  if(token) o.headers["Authorization"] = "Bearer " + token;
+  if(o.body !== undefined && !o.headers["Content-Type"]) o.headers["Content-Type"] = "application/json";
+  try{
+    const r = await fetch(base + path, o);
+    let j = {};
+    try{ j = await r.json(); }catch(e){}
+    if(r.status === 401 && authed){
+      token = ""; sessionStorage.removeItem(TOKEN_KEY);
+      toast("Session ended — please sign in again");
+      doLogout(false);
+    }
+    return Object.assign({ httpStatus: r.status, ok: !!j.ok }, j);
+  }catch(e){ return { httpStatus: 0, ok: false, error: "unreachable" }; }
+}
+async function publishToServer(){
+  const base = serverBase();
+  if(!base) return { ok:false, reason:"no-server" };
+  if(!token) return { ok:false, reason:"no-auth" };
+  try{
+    const j = await apiJSON("/api/data", {
+      method: "POST",
+      body: JSON.stringify({ data: currentData() })
+    });
+    return { ok: !!j.ok, reason: j.error || ("http-" + (j.httpStatus || 0)) };
+  }catch(e){ return { ok:false, reason:"unreachable" }; }
+}
+async function checkServer(){
+  const base = serverBase();
+  if(!base) return { ok:false, reason:"no-server", base:"" };
+  try{
+    const j = await fetchJSON(base + "/api/data");
+    const n = Object.values((j.data && j.data.menu) || {}).flat().length;
+    return { ok: !!j.ok, reason: j.error || "", base, items: n };
+  }catch(e){ return { ok:false, reason:"unreachable", base }; }
+}
+async function refreshServerStatus(){
+  const base = serverBase();
+  const r = await checkServer();
+  const live = !!r.ok && !!base;
+  const signed = !!(base && token);
+  const text = !base ? "off — file mode"
+    : (signed ? "on · signed in" : (r.ok ? (prefs.autoPublish ? "on · not signed in (local only)" : "on · not signed in") : "offline (" + r.reason + ")"));
+  [$("#srvStatus"), $("#srvSt2")].forEach(el => { if(!el) return;
+    el.classList.toggle("open", live);
+    el.classList.toggle("closed", !live);
+    const dot = el.querySelector(".dot"); if(dot) dot.style.display = base ? "" : "none";
+    el.querySelector("span:last-child").textContent = text;
+  });
+  const auto = $("#srvAuto"); if(auto){
+    auto.checked = signed ? true : !!prefs.autoPublish;
+    auto.disabled = !!signed;
+  }
+  const h = $("#srvHint"); if(h) h.textContent = live
+    ? (signed ? "Signed in securely — every save auto-deploys to the live site."
+             : "Connected — sign in (secure) to make every save auto-deploy. Until then saves only stay on this device.")
+    : (prefs.autoPublish ? "Server not reachable — saves stay local until it's back." : "When connected, every save goes live instantly — no copy/paste.");
+  const p = $("#pubServer"); if(p) p.textContent = !base ? "server: not configured — copy/paste mode"
+    : (signed ? "server: " + base + " · signed in, saves go live instantly" : "server: " + base + " · not signed in");
+  const sc = $("#secStatus"); if(sc){
+    sc.classList.toggle("open", signed);
+    sc.classList.toggle("closed", !signed);
+    sc.querySelector("span:last-child").textContent = signed ? ("session · " + (sessionUser || "admin")) : "not signed in";
+  }
+}
+async function commit(msg){
+  saveToLocal();
+  localStorage.setItem(LS_KEY + "_ts", String(Date.now()));
+  let r = { ok:false, skipped:true, reason:"" };
+  if(token && prefs.autoPublish){
+    try{ r = await publishToServer(); }
+    catch(e){ r = { ok:false, reason:"unreachable" }; }
+  }
+  if(!token){ toast(authed ? msg + " · saved locally (offline)" : msg); }
+  else if(r.ok){ toast(msg + " · deployed to live server"); }
+  else { toast(msg + " · saved locally — server " + r.reason); }
+  renderPublish(); refreshServerStatus();
+  return r;
+}
+
+const orderList = () => { try{ return JSON.parse(localStorage.getItem("aadil_orders") || "[]"); }catch(e){ return []; } };
+const IMAGE_KEYS = Object.keys(BASE.images);
+const ICON_LIST = ["scooter","shield","flame","truck","leaf","heart","clock","pin","chat","bag","cart","phone","wa","star","check"];
+
+/* ================= auth (secure backend) ================= */
+const TOKEN_KEY = "aadil_admin_sid";
+let token = sessionStorage.getItem(TOKEN_KEY) || "";
+let sessionUser = "";
+let authed = false;
+let offlineMode = false;
+
+function showLogin(msg){
+  authed = false; offlineMode = false;
+  $("#app").style.display = "none";
+  $("#login").style.display = "grid";
+  if(msg) $("#pwErr").textContent = msg;
+}
+function enterApp(){
+  authed = true;
+  $("#login").style.display = "none";
+  $("#app").style.display = "grid";
+  init();
+}
+async function doLogout(remote){
+  try{
+    if(remote && token){ await apiJSON("/api/logout", { method:"POST" }); }
+  }catch(e){}
+  token = ""; sessionStorage.removeItem(TOKEN_KEY);
+  const el = $("#loginServer");
+  if(el){ el.textContent = "Checking secure backend…"; el.classList.remove("off"); }
+  const row = $("#offlineRow"); if(row) row.style.display = "none";
+  showLogin("");
+  $("#pw").value = "";
+}
+function secLoginStatus(el){
+  if(!el) return;
+  el.textContent = "Checking secure backend…";
+  el.classList.remove("off");
+}
+
+$("#loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const bt = $("#loginBtn");
+  const base = serverBase();
+  if(bt) bt.disabled = true;
+  $("#pwErr").textContent = "";
+  if(!base){
+    $("#pwErr").textContent = "No server URL — open Settings and enter it, or continue offline below.";
+    if(bt) bt.disabled = false;
+    return;
+  }
+  const j = await apiJSON("/api/login", {
+    method: "POST",
+    body: JSON.stringify({ user: $("#user").value.trim(), password: $("#pw").value })
+  });
+  if(bt) bt.disabled = false;
+  if(j.ok && j.token){
+    token = j.token; sessionUser = j.user || $("#user").value.trim();
+    sessionStorage.setItem(TOKEN_KEY, token);
+    prefs.autoPublish = true; savePrefs();
+    $("#pw").value = "";
+    enterApp();
+    toast("Signed in — saves now auto-publish live");
+  } else {
+    $("#pwErr").textContent = j.error || "Sign in failed";
+    $("#pw").value = "";
+  }
+});
+(async () => {
+  const el = $("#loginServer");
+  const base = serverBase();
+  if(!base){
+    if(el){ el.textContent = "No server configured — offline only."; el.classList.add("off"); }
+    const row = $("#offlineRow"); if(row) row.style.display = "flex";
+    return;
+  }
+  const h = await fetchJSON(base + "/api/health");
+  if(!h.ok){
+    if(el){ el.textContent = "Secure server unreachable — open Settings to fix the URL, or continue offline."; el.classList.add("off"); }
+    const row = $("#offlineRow"); if(row) row.style.display = "flex";
+    return;
+  }
+  if(el){ el.textContent = "Secured backend connected · " + base; el.classList.remove("off"); }
+  if(token){
+    const j = await apiJSON("/api/orders");
+    if(j.ok){
+      sessionUser = j.user || sessionUser;
+      prefs.autoPublish = true; savePrefs();
+      enterApp();
+      return;
+    }
+  }
+})();
+$("#offlineBtn").addEventListener("click", () => {
+  offlineMode = true;
+  sessionUser = "";
+  prefs.autoPublish = false; savePrefs();
+  enterApp();
+  toast("Offline preview — sign in on the live server to publish securely");
+});
+$("#logout").addEventListener("click", () => { doLogout(true); setTimeout(() => location.reload(), 150); });
+$("#secLogout").addEventListener("click", () => { doLogout(true); setTimeout(() => location.reload(), 150); });
+
+/* ================= toast ================= */
+let tt;
+const toast = msg => {
+  const t = $("#toast"); t.textContent = msg; t.classList.add("on");
+  clearTimeout(tt); tt = setTimeout(() => t.classList.remove("on"), 2000);
+};
+
+/* ================= navigation ================= */
+function init(){
+  $$(".nav-btn").forEach(b => b.addEventListener("click", () => {
+    $$(".nav-btn").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    $$(".view").forEach(v => v.classList.remove("on"));
+    $("#view-" + b.dataset.view).classList.add("on");
+    render();
+  }));
+  $("#ordBadge").textContent = combinedOrders().length ? " · " + combinedOrders().length : "";
+  render();
+  refreshServerStatus();
+  pullServerOrders();
+}
+
+function render(){
+  renderDash(); renderMenuView(); renderOrders(); fillSettings(); renderPublish();
+}
+
+/* ================= dashboard ================= */
+function isOpen(){
+  const hrs = W.settings.hours || [];
+  const n = new Date(), m = n.getHours()*60 + n.getMinutes();
+  if(W.settings.forceClosed) return { open:false, label:"Closed (paused)" };
+  const o = hrs.find(h => m >= toMin(h.start) && m < toMin(h.end));
+  if(o) return { open:true, label:"Open · " + o.label };
+  return { open:false, label:"Closed" };
+}
+const toMin = hhmm => { const [h,m] = (hhmm || "0:0").split(":").map(Number); return h*60 + m; };
+
+function renderDash(){
+  const items = Object.values(W.menu).flat().length;
+  const cats = Object.keys(W.menu).length;
+  const stars = Object.values(W.menu).flat().filter(i => i.star).length;
+  const today = new Date().toDateString();
+  const tod = orderList().filter(o => new Date(o.ts).toDateString() === today);
+  const rev = tod.reduce((s,o) => s + (o.total || 0), 0);
+
+  $("#stItems").textContent = items;
+  $("#stCats").textContent = cats + " categories";
+  $("#stStars").textContent = stars;
+  $("#stOrders").textContent = tod.length;
+  $("#stRev").textContent = rupees(rev);
+
+  const st = isOpen();
+  ["#dashStatus", "#dashStatus2"].forEach(sel => {
+    const el = $(sel); if(!el) return;
+    el.classList.toggle("open", st.open); el.classList.toggle("closed", !st.open);
+    el.querySelector("span:last-child").textContent = st.label;
+  });
+
+  const closed = !!W.settings.forceClosed;
+  $("#btnOpen").classList.toggle("sel", !closed);
+  $("#btnClose").classList.toggle("sel", closed);
+  $("#fcNote").textContent = closed
+    ? "Currently PAUSED (CLOSED) — the live site shows the closed notice everywhere. Press OPEN to resume service hours."
+    : "Currently OPEN — the site follows your service hours below. Press CLOSED to pause ordering instantly.";
+  const hh = new Date().getHours();
+  $("#dashGreet").textContent = `${BASE.settings.name} · ${W.settings.hours ? W.settings.hours.length : 0} service windows · ${hh < 12 ? "good morning" : hh < 17 ? "good afternoon" : "good evening"}`;
+}
+$("#btnOpen").addEventListener("click", () => {
+  W.settings.forceClosed = false;
+  commit("Shop is OPEN — orders accepted"); renderDash();
+});
+$("#btnClose").addEventListener("click", () => {
+  W.settings.forceClosed = true;
+  commit("Shop is CLOSED (paused)"); renderDash();
+});
+$("#dashDeploy").addEventListener("click", () => {
+  saveToLocal();
+  publishToServer().then(r => {
+    if(r.ok){ toast("Deployed — live site updated"); refreshServerStatus(); renderPublish(); }
+    else toast("Deploy failed: " + (r.reason === "no-server" ? "set the Server URL in Settings" : r.reason));
+  });
+});
+$("#srvDeployNow").addEventListener("click", () => { $("#dashDeploy").click(); });
+
+/* ================= menu manager ================= */
+let activeCat = Object.keys(W.menu)[0];
+
+function renderMenuView(){
+  const cats = Object.keys(W.menu);
+  if(!cats.includes(activeCat)) activeCat = cats[0] || "";
+  $("#cats").innerHTML = cats.map(c =>
+    `<button class="cat${c === activeCat ? " active" : ""}" data-cat="${c}">${escapeHtml(c)}</button>`).join("");
+  $("#catTools").innerHTML = `
+    <input id="renameCat" value="${escapeHtml(activeCat)}" style="flex:1" />
+    <button class="btn btn-ghost btn-sm" data-rename>Rename</button>
+    <button class="btn btn-red btn-sm" data-dellcat>Delete</button>`;
+  $("#addItemBtn").style.display = cats.length ? "inline-flex" : "none";
+
+  const items = (W.menu[activeCat] || []);
+  if(!items.length){
+    $("#menuTable").innerHTML = `<div class="empty">No items in "${activeCat || ""}". Click Add item to create the first one.</div>`;
+    return;
+  }
+  $("#menuTable").innerHTML = `
+    <table class="table">
+      <thead><tr><th>Dish</th><th>Price</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead>
+      <tbody>` + items.map((it, idx) => `
+        <tr>
+          <td><div class="row" style="gap:13px">
+            <img class="thumb" src="${imgUrl(it.img)}" alt="" onerror="this.style.visibility='hidden'"/>
+            <div class="name">${escapeHtml(it.n)}<small>${escapeHtml(it.d || "")}</small></div>
+          </div></td>
+          <td style="font-weight:600;color:var(--gold-2)">${rupees(it.p)}</td>
+          <td>${it.a === false ? '<span class="badge sold">Sold out</span>' : `<span class="badge ${it.v ? "veg" : ""}">${it.v ? "Veg" : "Non-veg"}</span>`} ${it.star ? '<span class="badge star">Bestseller</span>' : ""}</td>
+          <td><div class="tbl-actions">
+            <button class="btn btn-ghost btn-sm" data-edit="${idx}">Edit</button>
+            <button class="btn btn-green btn-sm" data-dup="${idx}">Copy</button>
+            <button class="btn btn-red btn-sm" data-del="${idx}">Delete</button>
+          </div></td>
+        </tr>`).join("") + `</tbody></table>`;
+}
+
+$("#cats").addEventListener("click", e => {
+  const b = e.target.closest(".cat"); if(!b) return;
+  activeCat = b.dataset.cat; renderMenuView();
+});
+$("#catTools").addEventListener("click", e => {
+  const ren = e.target.closest("[data-rename]");
+  if(ren){
+    const nn = $("#renameCat").value.trim();
+    if(!nn) return toast("Category name can't be empty");
+    if(nn !== activeCat && W.menu.hasOwnProperty(nn)) return toast("Category name already exists");
+    const items = W.menu[activeCat];
+    delete W.menu[activeCat];
+    W.menu[nn] = items;
+    activeCat = nn;
+    commit("Category renamed"); renderMenuView();
+  }
+  const del = e.target.closest("[data-dellcat]");
+  if(del){
+    if(!confirm(`Delete "${activeCat}" and all its ${W.menu[activeCat] ? W.menu[activeCat].length : 0} items?`)) return;
+    delete W.menu[activeCat];
+    activeCat = Object.keys(W.menu)[0] || "";
+    commit("Category deleted"); renderMenuView();
+  }
+});
+$("#addCat").addEventListener("click", () => {
+  const nn = $("#newCat").value.trim();
+  if(!nn) return toast("Enter a category name");
+  if(W.menu[nn]) return toast("Category already exists");
+  W.menu[nn] = []; activeCat = nn;
+  commit("Category added"); renderMenuView();
+});
+
+$("#menuTable").addEventListener("click", e => {
+  const items = W.menu[activeCat] || [];
+  const it = e.target.closest("[data-edit]");
+  if(it) return openItemModal(items[+it.dataset.edit], activeCat);
+  const d = e.target.closest("[data-del]");
+  if(d){
+    const i = +d.dataset.del;
+    if(confirm(`Delete "${items[i].n}"?`)){ items.splice(i, 1); commit("Item deleted"); renderMenuView(); }
+  }
+  const dup = e.target.closest("[data-dup]");
+  if(dup){
+    const c = JSON.parse(JSON.stringify(items[+dup.dataset.dup]));
+    c.n = c.n + " (copy)"; c.star = false;
+    items.push(c); commit("Item duplicated"); renderMenuView();
+  }
+});
+$("#addItemBtn").addEventListener("click", () => openItemModal(null, activeCat));
+
+/* ================= item modal ================= */
+function imgUrl(key){ return W.images[key] || key || ""; }
+function imgObject(key){
+  const url = imgUrl(key);
+  return W.images[key] ? { key, url } : { key: null, url };
+}
+let editingMode = null; /* {cat, index} */
+
+function openItemModal(item, cat){
+  editingMode = item ? { cat, index: W.menu[cat].indexOf(item) } : { cat, index: null };
+  $("#mTitle").textContent = item ? "Edit item" : "Add item";
+  const cats = Object.keys(W.menu);
+  $("#mCat").innerHTML = cats.map(c => `<option${c === cat ? " selected" : ""}>${escapeHtml(c)}</option>`).join("");
+  if(item){
+    $("#mName").value = item.n || ""; $("#mPrice").value = item.p || "";
+    $("#mDesc").value = item.d || ""; $("#mVeg").checked = !!item.v;
+    $("#mStar").checked = !!item.star; $("#mAvail").checked = item.a !== false;
+    const img = imgObject(item.img);
+    $("#mImgKey").value = img.key || "";
+    $("#mImgUrl").value = img.key ? "" : (item.img || "");
+  } else {
+    $("#mName").value = ""; $("#mPrice").value = ""; $("#mDesc").value = "";
+    $("#mVeg").checked = false; $("#mStar").checked = false; $("#mAvail").checked = true;
+    $("#mImgKey").value = ""; $("#mImgUrl").value = "";
+  }
+  buildImgOptions($("#mImgKey").value);
+  updateImgPreview();
+  $("#modal").classList.add("on");
+}
+function buildImgOptions(sel){
+  $("#mImgKey").innerHTML = `<option value="">— custom URL —</option>` +
+    IMAGE_KEYS.map(k => `<option value="${k}"${k === sel ? " selected" : ""}>${k}</option>`).join("");
+}
+function updateImgPreview(){
+  const key = $("#mImgKey").value, url = $("#mImgUrl").value.trim();
+  $("#mImg").src = key ? imgUrl(key) : (url || "logo-256.png");
+}
+$("#mImgKey").addEventListener("change", () => { if($("#mImgKey").value) $("#mImgUrl").value = ""; updateImgPreview(); });
+$("#mImgUrl").addEventListener("input", () => { if($("#mImgUrl").value) $("#mImgKey").value = ""; buildImgOptions(""); updateImgPreview(); });
+$("#mCancel").addEventListener("click", () => $("#modal").classList.remove("on"));
+$("#mSave").addEventListener("click", saveItem);
+function saveItem(){
+  const n = $("#mName").value.trim();
+  const p = parseFloat($("#mPrice").value);
+  const cat = $("#mCat").value, d = $("#mDesc").value.trim();
+  if(!n) return toast("Dish name is required");
+  if(!(p >= 0)) return toast("Enter a valid price");
+  const key = $("#mImgKey").value, url = $("#mImgUrl").value.trim();
+  const item = {
+    n, p, d,
+    img: key || (url || "biryani"),
+    v: $("#mVeg").checked, star: $("#mStar").checked, a: $("#mAvail").checked
+  };
+  if(editingMode.index === null){
+    W.menu[cat].push(item);
+  } else {
+    const old = editingMode;
+    W.menu[old.cat].splice(old.index, 1);
+    W.menu[cat].push(item);
+  }
+  activeCat = cat;
+  commit(editingMode.index === null ? "Item added" : "Item saved");
+  renderMenuView(); $("#modal").classList.remove("on");
+}
+
+/* ================= orders ================= */
+function combinedOrders(){
+  const local = orderList();
+  const seen = new Set(local.map(o => o.id).filter(Boolean));
+  const extra = serverOrders.filter(o => o.id && !seen.has(o.id));
+  return local.concat(extra);
+}
+async function pullServerOrders(){
+  const base = serverBase();
+  if(!base || !token) return;
+  try{
+    const j = await apiJSON("/api/orders");
+    if(j.ok && Array.isArray(j.orders)) serverOrders = j.orders;
+  }catch(e){}
+  renderOrders();
+}
+function renderOrders(){
+  const list = combinedOrders().slice().reverse();
+  const box = $("#ordersBox");
+  if(!list.length){
+    box.innerHTML = `<div class="empty">No orders logged yet.<br/><br/>When someone on this device taps "Send Order on WhatsApp", the order is recorded here and opened in WhatsApp.<br/><br/><b>Note:</b> orders placed by other visitors arrive straight on your WhatsApp — that's the live channel${serverBase() ? " (also synced to this panel via the live server)" : ""}.</div>`;
+    return;
+  }
+  box.innerHTML = list.map(o => {
+    const items = (o.items || []).map(i => `<li><span>${escapeHtml(i.n)} × ${i.q}</span><span style="color:var(--gold-2)">${rupees(i.p * i.q)}</span></li>`).join("");
+    return `<div class="order-card">
+      <div class="head"><span class="time">${escapeHtml(o.iso)}</span><span class="tot">${rupees(o.total)}</span></div>
+      <ul>${items}</ul>
+      <div class="meta">
+        <span class="badge star">Items ${(o.items||[]).reduce((s,i)=>s+i.q,0)}</span>
+        <span class="badge ${o.delivery === 0 ? "veg" : ""}">Delivery ${o.delivery === 0 ? "FREE" : rupees(o.delivery)}</span>
+      </div>
+    </div>`;
+  }).join("");
+}
+$("#clearOrders").addEventListener("click", () => {
+  if(!confirm("Clear all logged orders on this panel? (server-synced orders will re-appear)")) return;
+  localStorage.removeItem("aadil_orders"); renderOrders(); toast("Order log cleared");
+});
+
+/* ================= settings ================= */
+function fillSettings(){
+  const s = W.settings;
+  $("#sName").value = s.name || "";      $("#sShort").value = s.short || "";
+  $("#sPhone").value = s.phone || "";    $("#sPhoneDisp").value = s.phoneDisplay || "";
+  $("#sWa").value = s.whatsapp || "";    $("#sArea").value = s.area || "";
+  $("#sAddress").value = s.address || "";$("#sLat").value = s.lat || "";
+  $("#sLng").value = s.lng || "";        $("#sCur").value = s.currency || "₹";
+  $("#sAvg").value = s.avgCost || "";    $("#sDelFee").value = s.deliveryFee ?? "";
+  $("#sFreeMin").value = s.freeDeliveryMin ?? ""; $("#sRating").value = s.rating || "";
+  $("#sRatingCnt").value = s.ratingCount || "";   $("#sIg").value = (s.social && s.social.instagram) || "";
+  $("#sFb").value = (s.social && s.social.facebook) || ""; $("#sClosedMsg").value = s.closedMessage || "";
+  const cw = $("#sCurPw"), nw = $("#sNewPw");
+  if(cw) cw.value = ""; if(nw) nw.value = "";
+  $("#srvUrl").value = prefs.serverUrl;
+  $("#srvAuto").checked = !!prefs.autoPublish;
+  renderHours(); renderAnn();
+  refreshServerStatus();
+}
+function renderHours(){
+  const hrs = W.settings.hours || [];
+  $("#hoursRows").innerHTML = (hrs.length ? hrs : [{label:"",start:"",end:""}]).map((h,i) => `
+    <div class="row" style="margin-bottom:8px">
+      <input data-h-label value="${escapeHtml(h.label)}" placeholder="Label, e.g. Lunch Service" style="flex:2.2" />
+      <input data-h-start type="time" value="${h.start}" style="flex:1.6" />
+      <input data-h-end type="time" value="${h.end}" style="flex:1.6" />
+      <button class="btn btn-red btn-sm" data-h-del aria-label="Remove">Delete</button>
+    </div>`).join("") +
+    (W.settings.hours && W.settings.hours.length ? "" : `<div class="hint">Add at least one service window for the Open/Closed status to work.</div>`);
+}
+$("#hoursRows").addEventListener("input", e => {
+  const rows = [...$$("#hoursRows .row")];
+  W.settings.hours = rows.map(r => ({
+    label: r.querySelector("[data-h-label]").value.trim(),
+    start: r.querySelector("[data-h-start]").value,
+    end: r.querySelector("[data-h-end]").value
+  }));
+});
+$("#hoursRows").addEventListener("click", e => {
+  if(e.target.closest("[data-h-del]")){
+    const rows = [...$$("#hoursRows .row")];
+    const i = rows.indexOf(e.target.closest("[data-h-del]").closest(".row"));
+    (W.settings.hours || []).splice(i, 1); renderHours();
+  }
+});
+$("#addHour").addEventListener("click", () => {
+  W.settings.hours = W.settings.hours || [];
+  W.settings.hours.push({ label:"Service", start:"11:30", end:"23:00" });
+  renderHours();
+});
+function renderAnn(){
+  const a = W.settings.announcement || [];
+  $("#annRows").innerHTML = (a.length ? a : [{icon:"shield",text:""}]).map((it,i) => `
+    <div class="row" style="margin-bottom:8px">
+      <select data-a-icon>
+        ${ICON_LIST.map(ic => `<option value="${ic}"${ic === it.icon ? " selected" : ""}>${ic}</option>`).join("")}
+      </select>
+      <input data-a-text value="${escapeHtml(it.text)}" placeholder="Announcement text…" style="flex:2" />
+      <button class="btn btn-red btn-sm" data-a-del>Delete</button>
+    </div>`).join("");
+}
+$("#annRows").addEventListener("input", e => {
+  const rows = [...$$("#annRows .row")];
+  W.settings.announcement = rows.map(r => ({
+    icon: r.querySelector("[data-a-icon]").value,
+    text: r.querySelector("[data-a-text]").value.trim()
+  })).filter(a => a.text);
+});
+$("#annRows").addEventListener("click", e => {
+  if(e.target.closest("[data-a-del]")){
+    const rows = [...$$("#annRows .row")];
+    const i = rows.indexOf(e.target.closest("[data-a-del]").closest(".row"));
+    (W.settings.announcement || []).splice(i, 1); renderAnn();
+  }
+});
+$("#addAnn").addEventListener("click", () => {
+  W.settings.announcement = W.settings.announcement || [];
+  W.settings.announcement.push({ icon:"shield", text:"" });
+  renderAnn();
+});
+$("#saveSettings").addEventListener("click", () => {
+  const s = W.settings;
+  s.name = $("#sName").value.trim() || s.name;
+  s.short = $("#sShort").value.trim() || "Aadil";
+  s.phone = $("#sPhone").value.trim();  s.phoneDisplay = $("#sPhoneDisp").value.trim();
+  s.whatsapp = $("#sWa").value.replace(/\D/g, ""); s.area = $("#sArea").value.trim();
+  s.address = $("#sAddress").value.trim(); s.lat = $("#sLat").value.trim(); s.lng = $("#sLng").value.trim();
+  s.currency = $("#sCur").value.trim() || "₹"; s.avgCost = +$("#sAvg").value || 0;
+  s.deliveryFee = +$("#sDelFee").value || 0;   s.freeDeliveryMin = +$("#sFreeMin").value || 0;
+  s.rating = +$("#sRating").value || 0;        s.ratingCount = +$("#sRatingCnt").value || 0;
+  s.social = s.social || {};
+  s.social.instagram = $("#sIg").value.trim(); s.social.facebook = $("#sFb").value.trim();
+  s.closedMessage = $("#sClosedMsg").value.trim();
+  commit("Settings saved"); renderDash();
+});
+$("#savePw").addEventListener("click", async () => {
+  if(!token || !serverBase()) return toast("No secure session — sign in on the live server first");
+  const cur = $("#sCurPw").value;
+  const next = $("#sNewPw").value.trim();
+  if(!cur) return toast("Enter your current password");
+  if(!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(next)) return toast("New password: min 8 characters, letters and numbers");
+  const j = await apiJSON("/api/change-password", { method:"POST", body: JSON.stringify({ current: cur, next: next }) });
+  if(j.ok){
+    $("#sCurPw").value = ""; $("#sNewPw").value = "";
+    toast("Password changed — signed out everywhere. Sign in again.");
+    setTimeout(() => { doLogout(true); location.reload(); }, 900);
+  } else toast(j.error || "Change failed");
+});
+$("#srvUrl").addEventListener("input", () => {
+  prefs.serverUrl = $("#srvUrl").value.trim();
+  savePrefs();
+});
+$("#srvUrl").addEventListener("blur", () => refreshServerStatus());
+$("#srvAuto").addEventListener("change", () => {
+  prefs.autoPublish = $("#srvAuto").checked;
+  savePrefs();
+  toast(prefs.autoPublish ? "Auto-publish ON — every save deploys live" : "Auto-publish OFF");
+  refreshServerStatus();
+});
+$("#srvTest").addEventListener("click", async () => {
+  const r = await checkServer();
+  toast(r.ok ? "Connected · live data reachable" : (r.reason === "no-server" ? "No server URL set" : "Cannot reach server (" + r.reason + ")"));
+  refreshServerStatus();
+});
+
+/* ================= publish ================= */
+function currentData(){
+  return {
+    settings: W.settings,
+    images: Object.assign({}, BASE.images, W.images),
+    menu: W.menu
+  };
+}
+function renderPublish(){
+  const hasOverride = !!JSON.parse(localStorage.getItem(LS_KEY) || "null");
+  $("#pubState").textContent = hasOverride ? "custom (overrides data.js)" : "defaults from data.js";
+  $("#pubLast").textContent = localStorage.getItem(LS_KEY + "_ts")
+    ? new Date(+localStorage.getItem(LS_KEY + "_ts")).toLocaleString("en-IN") : "never";
+  const pb = $("#pubServer"); if(pb){
+    const base = serverBase();
+    pb.textContent = !base ? "server: not configured (copy-paste mode)"
+      : (token ? "server: " + base + " | signed in, auto-publish live"
+               : "server: " + base + " | not signed in");
+  }
+}
+function dataJsText(){
+  const head = `/* ============================================================\n   Aadil Restaurant — published data (exported from admin panel)\n   ============================================================ */\n`;
+  return head + "window.AADIL = " + JSON.stringify(currentData(), null, 2) + ";\n";
+}
+$("#downloadData").addEventListener("click", () => {
+  const blob = new Blob([dataJsText()], { type: "text/javascript" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "data.js";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast("data.js downloaded — upload it to your host");
+});
+$("#copyData").addEventListener("click", async () => {
+  try{ await navigator.clipboard.writeText(dataJsText()); toast("Copied to clipboard"); }
+  catch(e){ toast("Copy failed — use Download instead"); }
+});
+$("#saveLocal").addEventListener("click", () => {
+  saveToLocal();
+  localStorage.setItem(LS_KEY + "_ts", String(Date.now()));
+  renderPublish(); toast("Saved to this device — open index.html to preview");
+});
+$("#resetData").addEventListener("click", () => {
+  if(!confirm("Reset all content to the original defaults in data.js? Your changes on this device will be removed.")) return;
+  localStorage.removeItem(LS_KEY); localStorage.removeItem(LS_KEY + "_ts");
+  location.reload();
+});
+
+function downloadData(){ $("#downloadData").click(); }
+
+/* ================= helpers ================= */
+const escapeHtml = s => String(s == null ? "" : s).replace(/[&<>"']/g, c =>
+  ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+
+document.addEventListener("keydown", e => { if(e.key === "Escape") $("#modal").classList.remove("on"); });
+</script>
+</body>
+</html>

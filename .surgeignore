@@ -1,0 +1,7 @@
+server.js
+store.json
+orders.json
+*.tmp
+*.backup*
+.git
+.gitignore
