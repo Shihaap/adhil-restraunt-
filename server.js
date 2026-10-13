@@ -332,7 +332,8 @@ function serveStatic(req, res){
 /* ------------------------------------------------------------------ app */
 if(process.env.RESET_ADMIN === '1'){
   try{ if(fs.existsSync(F_AUTH)){ fs.unlinkSync(F_AUTH); console.log('RESET_ADMIN=1 — auth.json removed, will recreate from ADMIN_PASSWORD env (which needs 8+ chars).'); }
-       if(fs.existsSync(F_SESS)){ fs.unlinkSync(F_SESS); } }catch(e){}
+       if(fs.existsSync(F_SESS)){ fs.unlinkSync(F_SESS); }
+       if(fs.existsSync(F_SECRET)){ fs.unlinkSync(F_SECRET); console.log('RESET_ADMIN=1 — secret.key rotated (old sessions invalidated).'); } }catch(e){}
 }
 ensureAdmin();
 ensureSecret();
